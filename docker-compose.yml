@@ -1,0 +1,85 @@
+volumes:
+  prepadata:
+
+networks:
+  prepanet:
+
+services:
+
+  # service de bdd
+  prepamaria:
+
+    # image du service
+    image: mariadb:latest
+    # nome le container:
+    container_name: mariaprepa
+    # définition des relations de ports
+    ports:
+      - "3315:3306"
+    # déclaration des variables d'environement
+    environment:
+      TZ: UTC+2
+      MARIADB_ROOT_PASSWORD: admin2025
+      MARIADB_DATABASE: prepabase
+      MARIADB_USER: prepa
+      MARIADB_PASSWORD: prepa2025
+    restart: always
+    volumes:
+      - prepadata:/var/lib/mysql
+      - ./script:/script
+    networks:
+      - prepanet
+
+  # server node
+  prepanode:
+    build:
+      context: ./node
+    container_name: nodeprepa
+    volumes:
+      - ./app:/var/www/html
+    networks:
+      - prepanet
+    tty: true
+    environment:
+      TZ: UTC+2
+    depends_on:
+      - prepaphp
+
+  # service PHP
+  prepaphp:
+    container_name: phpprepa
+    build:
+      context: ./php
+    ports:
+      - "9004:9000"
+    environment:
+      TZ: UTC+2
+      PHP_MEMORY_LIMIT: 512M
+      APP_PATH: "/var/www/html"
+    volumes:
+      - ./app:/var/www/html
+      - ./php/php_memory.ini:/usr/local/etc/php/conf.d/99-memory.ini
+    networks:
+      - prepanet
+    depends_on:
+      - prepamaria
+  
+  # Service WEB
+  prepanginx:
+    container_name: nginxprepa
+    image: nginx:stable-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./app:/var/www/html
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./logs:/var/log/nginx
+    environment:
+      TZ: UTC+2
+    depends_on:
+      - prepamaria
+      - prepaphp
+      - prepanode
+    networks:
+      - prepanet

@@ -1,0 +1,21 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #3a87b4;
+        background: linear-gradient(90deg, rgba(58, 135, 180, 1) 0%, rgba(253, 66, 29, 1) 50%, rgba(218, 252, 69, 1) 100%);
+}
+
+h1 {
+    font-family: sans-serif;
+    color: #292929;
+}
+
+.error {
+    color: rgb(221, 1, 1);
+    font-size: 13px;
+}
+
